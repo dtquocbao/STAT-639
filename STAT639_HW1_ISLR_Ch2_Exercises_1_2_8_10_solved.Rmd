@@ -349,6 +349,91 @@ par(mfrow = c(1, 1))
 
 Crime rate is positively associated with variables such as `rad`, `tax`, `indus`, `nox`, and `lstat`, and negatively associated with variables such as `dis`, `rm`, and `medv`. These are associations only and should not be interpreted as causal effects.
 
+## (d) High crime rates, tax rates, and pupil-teacher ratios
+
+```{r ex10-ranges}
+range(Boston$crim)
+range(Boston$tax)
+range(Boston$ptratio)
+
+summary(Boston[, c("crim", "tax", "ptratio")])
+```
+
+There are census tracts with unusually high crime rates relative to the majority of observations. Tax rates and pupil-teacher ratios also show substantial variation, although the extreme skew is especially noticeable for crime.
+
+We can inspect the largest values directly:
+  
+```{r ex10-largest}
+head(Boston[order(Boston$crim, decreasing = TRUE), ], 10)
+head(Boston[order(Boston$tax, decreasing = TRUE), ], 10)
+head(Boston[order(Boston$ptratio, decreasing = TRUE), ], 10)
+```
+
+## (e) Census tracts bounding the Charles River
+
+The variable `chas` equals 1 for census tracts that bound the Charles River.
+
+```{r ex10-charles}
+sum(Boston$chas == 1)
+```
+
+There are **`r sum(Boston$chas == 1)` census tracts** that bound the Charles River.
+
+## (f) Median pupil-teacher ratio
+
+```{r ex10-ptratio}
+median(Boston$ptratio)
+```
+
+The median pupil-teacher ratio is **`r median(Boston$ptratio)`**.
+
+## (g) Census tract with the lowest median home value
+
+```{r ex10-lowest-medv}
+min_medv <- min(Boston$medv)
+min_medv
+
+lowest_rows <- which(Boston$medv == min_medv)
+lowest_rows
+
+Boston[lowest_rows, ]
+```
+
+The minimum value of `medv` is **`r min_medv`**. Several tracts attain this minimum. To compare those observations with the overall ranges:
+  
+```{r ex10-lowest-comparison}
+overall_ranges <- sapply(Boston, range)
+
+overall_ranges
+Boston[lowest_rows, ]
+```
+
+The lowest-value tracts tend to have characteristics associated with disadvantaged housing markets, including relatively high crime or lower-status population percentages and, in some cases, low average room counts compared with the rest of the data. The exact values are displayed above so they can be compared directly with each variable's overall range.
+
+## (h) Census tracts averaging more than seven or eight rooms
+
+```{r ex10-rooms}
+sum(Boston$rm > 7)
+sum(Boston$rm > 8)
+```
+
+There are **`r sum(Boston$rm > 7)`** census tracts with more than seven rooms per dwelling and **`r sum(Boston$rm > 8)`** with more than eight rooms per dwelling.
+
+Inspect the tracts with more than eight rooms:
+
+```{r ex10-rooms-eight}
+rooms_gt8 <- Boston[Boston$rm > 8, ]
+rooms_gt8
+
+summary(rooms_gt8)
+```
+
+These tracts generally have large homes and relatively high median home values. However, they are not identical on the other predictors, so a large number of rooms by itself does not completely describe neighborhood conditions or housing value.
+
+
+
+
+
 
 
 
