@@ -1,0 +1,135 @@
+---
+title: "STAT 639 - Homework 1"
+subtitle: "ISLR Chapter 2: Exercises 1, 2, 8, and 10"
+author: "Bao Dang"
+date: "`r format(Sys.Date(), '%B %d, %Y')`"
+output:
+  pdf_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  fig.width = 8,
+  fig.height = 6
+)
+```
+
+# Exercise 1
+
+For each case, determine whether a more flexible statistical learning method would generally be expected to perform better or worse than a less flexible method.
+
+## (a) Large number of observations, small number of predictors
+
+A **more flexible method should generally perform better**.
+
+When \(n\) is very large and \(p\) is small, there is enough data to estimate a flexible model without suffering too much from high variance. A flexible model can capture more complicated relationships between the predictors and response, so the reduction in bias may outweigh the increase in variance.
+
+## (b) Small number of observations, large number of predictors
+
+A **more flexible method should generally perform worse**.
+
+With small \(n\) and large \(p\), a flexible method can easily fit random noise in the training data. This leads to overfitting and high variance. A less flexible method is generally safer in this setting.
+
+## (c) Highly non-linear relationship between predictors and response
+
+A **more flexible method should generally perform better**.
+
+If the true relationship is highly non-linear, a flexible model is better able to approximate that relationship. A simple model may have high bias because it cannot capture the true structure.
+
+## (d) Very high variance of the error terms
+
+A **more flexible method should generally perform worse**.
+
+When the irreducible noise is very large, a highly flexible method may begin fitting the noise rather than the underlying signal. This increases variance and can hurt test-set performance.
+
+# Exercise 2
+
+For each situation, identify whether the problem is classification or regression, whether the main goal is inference or prediction, and identify \(n\) and \(p\).
+
+## (a) CEO salary
+
+The response is CEO salary, and the explanatory variables include company profit, number of employees, and industry.
+
+- **Type:** Regression
+- **Goal:** Inference
+- **\(n\):** 500 firms
+- **\(p\):** 3 predictors
+
+This is a regression problem because CEO salary is quantitative. The purpose is to understand which factors are associated with CEO salary, so the primary goal is inference.
+
+## (b) Success of a new product
+
+The response indicates whether a product is successful or unsuccessful. The predictors consist of price, marketing budget, competitors' price, and ten other variables.
+
+- **Type:** Classification
+- **Goal:** Prediction
+- **\(n\):** 20 products
+- **\(p\):** 13 predictors
+
+This is classification because the response is qualitative. The goal is to predict whether the new product will succeed.
+
+## (c) Weekly change in the U.S. dollar
+
+The response is the weekly percentage change in the U.S. dollar relative to the euro, using weekly percentage changes in the stock market and the company's market as predictors.
+
+- **Type:** Regression
+- **Goal:** Prediction
+- **\(n\):** 52 weeks
+- **\(p\):** 2 predictors
+
+The response is quantitative, so this is regression. Since the goal is to forecast the weekly percentage change, the main goal is prediction.
+
+# Exercise 8 - College Data
+
+This exercise uses the `College` data set described in ISLR Chapter 2.
+
+## (a) Read the data
+
+The code below first looks for `College.csv` in the current working directory. If it is not present, it downloads the file from the book website.
+
+```{r ex8-load}
+
+college_file <- "College.csv"
+
+if (!file.exists(college_file)) {
+  download.file(
+    "https://www.statlearning.com/s/College.csv",
+    destfile = college_file,
+    mode = "wb"
+  )
+}
+
+college <- read.csv("College.csv", check.names = FALSE)
+
+```
+
+There are `r nrow(college)` colleges and universities. Before removing the institution-name column, the imported data contain `r ncol(college)` columns.
+
+## (b) Use college names as row names
+
+```{r ex8-row-names}
+
+# Inspect first column
+head(college[[1]])
+anyDuplicated(college[[1]])
+
+# Only use it as row names if it is unique
+if (anyDuplicated(college[[1]]) == 0) {
+  rownames(college) <- college[[1]]
+  college <- college[, -1, drop = FALSE]
+}else{
+  rownames(college) <- college[, 1]
+  college <- college[, -1]
+}
+
+dim(college)
+head(college)
+```
+
+After removing the institution-name column, the data contain 777 observations and 18 variables. The college names are now stored as row names rather than as a predictor.
