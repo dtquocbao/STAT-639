@@ -116,20 +116,239 @@ There are `r nrow(college)` colleges and universities. Before removing the insti
 ```{r ex8-row-names}
 
 # Inspect first column
-head(college[[1]])
-anyDuplicated(college[[1]])
-
-# Only use it as row names if it is unique
-if (anyDuplicated(college[[1]]) == 0) {
-  rownames(college) <- college[[1]]
-  college <- college[, -1, drop = FALSE]
-}else{
-  rownames(college) <- college[, 1]
-  college <- college[, -1]
-}
-
-dim(college)
-head(college)
+rownames(college) <- college[, 1]
+View(college)
 ```
 
-After removing the institution-name column, the data contain 777 observations and 18 variables. The college names are now stored as row names rather than as a predictor.
+After removing the institution-name column, the data contain `r nrow(college)` observations and `r ncol(college)` variables. The college names are now stored as row names rather than as a predictor.
+
+## (c-i) Numerical summary
+
+```{r ex8-summary}
+summary(college)
+```
+
+The variables differ substantially in scale. For example, enrollment and application counts vary widely across schools, as do tuition and instructional expenditures. Graduation rates and percentages such as `Top10perc`, `PhD`, and `perc.alumni` are naturally bounded percentage variables.
+
+## (c-ii) Scatterplot matrix of the first ten variables
+
+```{r ex8-pairs}
+
+# check first 10 columns
+str(college[, 1:10])
+
+rownames(college) <- college[, 1]
+college <- college[, -1]
+
+summary(college)
+
+# convert Private to factor before processing
+college$Private <- factor(college$Private)
+
+pairs(
+  college[, 1:10],
+  main = "Scatterplot Matrix: First 10 College Variables"
+)
+```
+
+Several size-related variables are strongly associated. In particular, colleges receiving more applications also tend to accept and enroll more students. Full-time undergraduate enrollment is also associated with these measures of school size.
+
+## (c-iii) Out-of-state tuition versus private/public status
+
+```{r ex8-outstate-private}
+
+plot(
+  college$Private,
+  college$Outstate,
+  xlab = "Private",
+  ylab = "Out-of-State Tuition",
+  main = "Out-of-State Tuition by Private/Public Status"
+)
+
+```
+
+Private colleges generally have substantially higher out-of-state tuition than public colleges.
+
+## (c-iv) Create an Elite variable
+
+A school is classified as elite when more than 50% of its students come from the top 10% of their high-school class.
+
+```{r ex8-elite}
+Elite <- rep("No", nrow(college))
+Elite[college$Top10perc > 50] <- "Yes"
+Elite <- as.factor(Elite)
+
+college <- data.frame(college, Elite)
+
+summary(college$Elite)
+```
+
+The number of elite colleges is:
+  
+```{r ex8-elite-count}
+sum(college$Elite == "Yes")
+```
+
+For the standard ISLR `College` data, this gives **`r sum(college$Elite == "Yes")` elite colleges**.
+
+Now compare tuition between elite and non-elite schools.
+
+```{r ex8-outstate-elite}
+plot(
+  college$Elite,
+  college$Outstate,
+  xlab = "Elite",
+  ylab = "Out-of-State Tuition",
+  main = "Out-of-State Tuition by Elite Status"
+)
+```
+
+Elite colleges tend to have higher out-of-state tuition than non-elite colleges.
+
+## (c-v) Histograms
+
+```{r ex8-histograms}
+par(mfrow = c(2, 2))
+
+hist(
+  college$Apps,
+  breaks = 20,
+  main = "Applications",
+  xlab = "Apps"
+)
+
+hist(
+  college$Outstate,
+  breaks = 20,
+  main = "Out-of-State Tuition",
+  xlab = "Outstate"
+)
+
+hist(
+  college$Expend,
+  breaks = 20,
+  main = "Instructional Expenditure",
+  xlab = "Expend"
+)
+
+hist(
+  college$Grad.Rate,
+  breaks = 20,
+  main = "Graduation Rate",
+  xlab = "Grad.Rate"
+)
+
+par(mfrow = c(1, 1))
+```
+
+Applications and instructional expenditure show noticeable right-skewness, reflecting a relatively small number of very large or high-spending institutions. Graduation rates are more concentrated toward the upper part of their possible range.
+
+## (c-vi) Additional exploration
+
+```{r ex8-extra}
+# Correlations among selected quantitative variables
+selected <- college[, c(
+  "Apps", "Accept", "Enroll", "Top10perc",
+  "Outstate", "Room.Board", "PhD",
+  "Expend", "Grad.Rate"
+)]
+
+round(cor(selected), 2)
+
+# Graduation rate versus instructional expenditure
+plot(
+  college$Expend,
+  college$Grad.Rate,
+  xlab = "Instructional Expenditure per Student",
+  ylab = "Graduation Rate",
+  main = "Graduation Rate vs. Expenditure"
+)
+
+# Top 10% students versus tuition
+plot(
+  college$Top10perc,
+  college$Outstate,
+  xlab = "% of Students from Top 10% of High School Class",
+  ylab = "Out-of-State Tuition",
+  main = "Selectivity vs. Tuition"
+)
+```
+
+Overall, the data suggest strong relationships among measures of institution size. More selective colleges also tend to charge higher tuition, and private or elite colleges generally have higher out-of-state tuition.
+
+# Exercise 10 - Boston Housing Data
+
+## Setup
+
+```{r ex10-setup}
+if (!requireNamespace("ISLR2", quietly = TRUE)) {
+  install.packages("ISLR2")
+}
+
+library(ISLR2)
+data("Boston")
+```
+
+## (a) Dimensions and meaning of rows and columns
+
+```{r ex10-dimensions}
+?Boston
+
+dim(Boston)
+names(Boston)
+str(Boston)
+```
+
+The Boston data contain **`r nrow(Boston)` rows and `r ncol(Boston)` columns**.
+
+Each row represents a Boston-area census tract. The columns contain tract-level predictors such as crime rate, zoning, industrial land use, air pollution, average number of rooms, property tax rate, pupil-teacher ratio, and related variables. The `medv` variable is the median value of owner-occupied homes.
+
+## (b) Pairwise scatterplots
+
+```{r ex10-pairs}
+pairs(
+  Boston,
+  main = "Boston Housing Data: Pairwise Scatterplots"
+)
+```
+
+Some clear relationships are visible. For example, `medv` tends to increase with `rm` and decrease with `lstat`. Crime tends to be higher in areas with higher `rad` and `tax`, and lower in areas with larger `dis`.
+
+## (c) Predictors associated with per-capita crime rate
+
+```{r ex10-crime}
+crime_cor <- sort(
+  cor(Boston)[, "crim"],
+  decreasing = TRUE
+)
+
+crime_cor
+```
+
+```{r ex10-crime-plots}
+par(mfrow = c(2, 2))
+
+plot(Boston$rad, Boston$crim,
+     xlab = "Accessibility to Radial Highways (rad)",
+     ylab = "Crime Rate (crim)")
+
+plot(Boston$tax, Boston$crim,
+     xlab = "Property Tax Rate (tax)",
+     ylab = "Crime Rate (crim)")
+
+plot(Boston$dis, Boston$crim,
+     xlab = "Distance to Employment Centers (dis)",
+     ylab = "Crime Rate (crim)")
+
+plot(Boston$lstat, Boston$crim,
+     xlab = "Lower-Status Population % (lstat)",
+     ylab = "Crime Rate (crim)")
+
+par(mfrow = c(1, 1))
+```
+
+Crime rate is positively associated with variables such as `rad`, `tax`, `indus`, `nox`, and `lstat`, and negatively associated with variables such as `dis`, `rm`, and `medv`. These are associations only and should not be interpreted as causal effects.
+
+
+
+
