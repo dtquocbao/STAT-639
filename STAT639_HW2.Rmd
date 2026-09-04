@@ -388,9 +388,6 @@ svm_data
 
 ```{r ch9-ex3a}
 
-# Class == "Red"  → pch = 19 → ● filled circle
-# Class == "Blue" → pch = 17 → ▲ filled triangle
-
 plot(
   svm_data$X1,
   svm_data$X2,
